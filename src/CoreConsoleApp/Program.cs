@@ -1,30 +1,52 @@
-﻿using CoreConsoleApp.Data;
-using CoreConsoleApp.IoC;
+﻿using CoreConsoleApp.IoC;
 using CoreConsoleApp.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 public class Program
 {
     static void Main(string[] args)
     {
-        var host = CreateHostBuilder(args).Build();
-        host.Services
-            .GetRequiredService<OutputGenerator>()
-            .RunJobs();
-    }
+        var services = new ServiceCollection();
+        DependencyContainer.ConfigureServices(services);
+        var serviceProvider = services.BuildServiceProvider();
+        var outputGenerator = serviceProvider.GetService<OutputGenerator>();
 
-    private static IHostBuilder CreateHostBuilder(string[] args)
-    {
-        return Host.CreateDefaultBuilder(args)
-            .ConfigureServices(services =>
-            {
-                DependencyContainer.ConfigureServices(services);
-            });
+        if (outputGenerator is null) throw new ArgumentNullException(nameof(outputGenerator));
+
+        outputGenerator.RunJobs();
     }
 }
+
+// above is using service = ServiceCollections -> ServiceProvider -> GetService<>()
+// see below for option B
+
+//using CoreConsoleApp.Data;
+//using CoreConsoleApp.IoC;
+//using CoreConsoleApp.Services;
+//using Microsoft.EntityFrameworkCore;
+//using Microsoft.Extensions.DependencyInjection;
+//using Microsoft.Extensions.Hosting;
+//using Microsoft.Extensions.Logging;
+
+//public class Program
+//{
+//    static void Main(string[] args)
+//    {
+//        var host = CreateHostBuilder(args).Build();
+//        host.Services
+//            .GetRequiredService<OutputGenerator>()
+//            .RunJobs();
+//    }
+
+//    private static IHostBuilder CreateHostBuilder(string[] args)
+//    {
+//        return Host.CreateDefaultBuilder(args)
+//            .ConfigureServices(services =>
+//            {
+//                DependencyContainer.ConfigureServices(services);
+//            });
+//    }
+//}
 
 
 
@@ -46,41 +68,3 @@ public class Program
             });
 }*/
 
-/*
- * using service = ServiceCollections -> ServiceProvider -> GetService<>()
- * 
-class Program
-{
-    static void Main(string[] args)
-    {
-        var services = new ServiceCollection();
-        ConfigureServices(services);
-        services
-            .AddSingleton<Executor,Executor>()
-            .BuildServiceProvider()
-            .GetService<Executor>()
-            .Execute();
-    }
-
-    private static void ConfigureServices(IServiceCollection services)
-    {
-        services
-            .AddSingleton<ITest, Test>();
-    }
-}
-
-public class Executor
-{
-    private readonly ITest _test;
-
-    public Executor(ITest test)
-    {
-        _test = test;
-    }
-
-    public void Execute()
-    {
-        _test.DoSomething();
-    }
-}
-*/
