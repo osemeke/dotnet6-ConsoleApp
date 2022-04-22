@@ -5,11 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Configuration;
 
 namespace CoreConsoleApp.IoC
 {
@@ -17,9 +13,17 @@ namespace CoreConsoleApp.IoC
     {
         internal static void ConfigureServices(IServiceCollection services)
         {
+            IConfigurationRoot appsettings = GetAppSettings();
+
             services.AddTransient<OutputGenerator>();
-            services.AddDbContext<DbContext, SQLiteDbContext>();
-            //services.AddDbContext<DbContext, SQLServerDbContext>();
+            services.AddTransient<IGenerator, AlbumHtmlGeneration>();
+            
+            services.AddDbContext<SQLiteDbContext>();
+
+            //services.AddDbContext<WaecDbContext>();
+
+            services.AddDbContext<WaecDbContext>(options =>
+                options.UseSqlServer(appsettings.GetSection("ConnectionStrings")["DefaultContext"]));
 
             // configure logging
             services.AddLogging(builder =>
@@ -28,7 +32,6 @@ namespace CoreConsoleApp.IoC
                 builder.AddDebug();
             });
 
-            IConfigurationRoot appsettings = GetAppSettings();
             services.Configure<AppSettings>(appsettings.GetSection("Settings"));
 
         }

@@ -1,11 +1,7 @@
-﻿using CoreConsoleApp.Options;
+﻿using CoreConsoleApp.Data;
+using CoreConsoleApp.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CoreConsoleApp.Services
 {
@@ -13,15 +9,31 @@ namespace CoreConsoleApp.Services
     {
         private readonly ILogger<OutputGenerator> _logger;
         private readonly AppSettings _settings;
+        private readonly SQLiteDbContext _db;
+        private readonly IGenerator _generator;
 
-        public OutputGenerator(ILogger<OutputGenerator> logger, IOptions<AppSettings> settings)
+        public OutputGenerator(
+            ILogger<OutputGenerator> logger,
+            SQLiteDbContext db,
+            IGenerator generator,
+            IOptions<AppSettings> settings)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _db = db ?? throw new ArgumentNullException(nameof(db));
+            _generator = generator ?? throw new ArgumentNullException(nameof(generator));
             _settings = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public void RunJobs() 
+        public void RunJobs()
         {
+
+            var pending = _db.Jobs.Where(x => x.Status == "pending").FirstOrDefault();
+
+            if (pending != null)
+            {
+                _generator.Run(pending);
+            }
+
             Console.WriteLine(_settings.BatchSize);
             Console.WriteLine(_settings.BasePath);
             Console.WriteLine("OK");

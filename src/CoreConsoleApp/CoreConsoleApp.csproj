@@ -28,9 +28,13 @@
 
   <ItemGroup>
     <Folder Include="AppDb\" />
+    <Folder Include="Constants\" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="AppDb\myapp.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
